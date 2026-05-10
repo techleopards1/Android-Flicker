@@ -1,0 +1,3 @@
+package com.androidflicker.flickergallery.domain.repository
+
+interface FlickerRepository
