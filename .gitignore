@@ -1,0 +1,89 @@
+# ============================================================
+# Android / Kotlin / Gradle
+# ============================================================
+
+# Build outputs
+/build/
+**/build/
+out/
+
+# Gradle cache & wrapper state
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!gradlew
+!gradlew.bat
+
+# Local configuration (contains SDK path — machine-specific)
+local.properties
+
+# Android Studio / IntelliJ IDEA generated files
+*.iml
+.idea/
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+/.idea/caches/
+/.idea/libraries/
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+
+# Capture / profiling output
+/captures/
+
+# Lint output
+lint/
+*.lint.xml
+
+# Native build intermediates
+.externalNativeBuild/
+.cxx/
+cmake-build-*/
+
+# ============================================================
+# APK / AAB / release artefacts
+# ============================================================
+*.apk
+*.aab
+*.ap_
+release/
+
+# ============================================================
+# Keystores & signing secrets — NEVER commit these
+# ============================================================
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+release-keystore/
+secrets/
+*.secret
+*.secrets
+google-services.json
+GoogleService-Info.plist
+
+# ============================================================
+# Logs
+# ============================================================
+*.log
+logs/
+
+# ============================================================
+# OS-generated files
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================
+# Environment / CI secrets
+# ============================================================
+.env
+.env.*
+!.env.example
