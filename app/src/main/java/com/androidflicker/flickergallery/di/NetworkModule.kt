@@ -1,6 +1,6 @@
 package com.androidflicker.flickergallery.di
 
-import com.androidflicker.flickergallery.BuildConfig
+import com.androidflicker.flickergallery.core.config.EnvironmentConfig
 import com.androidflicker.flickergallery.core.network.NetworkConstants
 import com.androidflicker.flickergallery.data.remote.api.ApiService
 import com.google.gson.Gson
@@ -29,7 +29,7 @@ object NetworkModule {
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(
             HttpLoggingInterceptor().apply {
-                level = if (BuildConfig.DEBUG) {
+                level = if (EnvironmentConfig.enableLogging) {
                     HttpLoggingInterceptor.Level.BODY
                 } else {
                     HttpLoggingInterceptor.Level.NONE
@@ -44,7 +44,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit = Retrofit.Builder()
-        .baseUrl(NetworkConstants.BASE_URL)
+        .baseUrl(EnvironmentConfig.apiBaseUrl)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create(gson))
         .build()

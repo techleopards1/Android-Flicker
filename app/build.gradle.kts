@@ -20,6 +20,33 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            buildConfigField("String", "API_BASE_URL", "\"https://dev-api.flickr.com/\"")
+            buildConfigField("String", "APP_ENVIRONMENT", "\"dev\"")
+            buildConfigField("Boolean", "ENABLE_LOGGING", "true")
+        }
+        create("staging") {
+            dimension = "environment"
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
+            buildConfigField("String", "API_BASE_URL", "\"https://staging-api.flickr.com/\"")
+            buildConfigField("String", "APP_ENVIRONMENT", "\"staging\"")
+            buildConfigField("Boolean", "ENABLE_LOGGING", "true")
+        }
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"https://api.flickr.com/\"")
+            buildConfigField("String", "APP_ENVIRONMENT", "\"production\"")
+            buildConfigField("Boolean", "ENABLE_LOGGING", "false")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
