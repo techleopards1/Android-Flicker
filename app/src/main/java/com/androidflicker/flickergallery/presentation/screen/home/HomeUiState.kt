@@ -1,9 +1,9 @@
 package com.androidflicker.flickergallery.presentation.screen.home
 
-import com.androidflicker.flickergallery.domain.model.Photo
-
 data class HomeUiState(
     val isLoading: Boolean = false,
-    val photos: List<Photo> = emptyList(),
-    val error: String? = null,
+    val popularItems: List<HomeItemUiModel> = emptyList(),
+    val recentItems: List<HomeItemUiModel> = emptyList(),
+    val trendingItems: List<HomeItemUiModel> = emptyList(),
+    val errorMessage: String? = null,
 )

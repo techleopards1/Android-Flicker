@@ -34,10 +34,11 @@ val coverageExclusions =
         "**/*_ComponentTreeDeps*.*",
         // Compose generated
         "**/*ComposableSingletons*.*",
-        // UI-only / theme / navigation / screens (no testable logic)
+        // UI-only / theme / navigation / screens / components (no testable logic)
         "**/presentation/theme/**",
         "**/presentation/navigation/**",
         "**/presentation/screen/**",
+        "**/presentation/component/**",
         "**/*Preview*.*",
         // Hilt DI modules (wiring only, covered by integration tests)
         "**/di/**",
@@ -222,6 +223,9 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
+
+    // Image loading
+    implementation(libs.coil.compose)
 
     // Hilt
     implementation(libs.hilt.android)
