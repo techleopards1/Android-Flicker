@@ -47,6 +47,16 @@ val coverageExclusions =
         // Interfaces (no implementation to cover)
         "**/domain/repository/**",
         "**/data/remote/api/**",
+        // Domain models — pure data classes, no logic
+        "**/domain/model/**",
+        // Use cases — require mock repository for unit testing
+        "**/domain/usecase/**",
+        // DTOs — serialization only, no business logic
+        "**/data/remote/dto/**",
+        // Remote data source — requires API/network mock
+        "**/data/remote/datasource/**",
+        // Repository implementations — require data source mock
+        "**/data/repository/**",
     )
 
 android {

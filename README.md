@@ -232,22 +232,105 @@ Rules are configured in `config/detekt/detekt.yml`. Key decisions:
 
 ---
 
+## Architecture
+
+This project follows **Clean MVVM Architecture** with three distinct layers.
+
+### Dependency direction
+
+```
+Presentation  →  Domain  ←  Data
+```
+
+- **Presentation** depends on **Domain** (uses use cases, domain models)
+- **Data** depends on **Domain** (implements domain interfaces)
+- **Domain** depends on **nothing** — pure Kotlin
+
+### Layers
+
+**Presentation** (`presentation/`)
+- Compose screens render `UiState` and emit `UiEvent` to ViewModels
+- ViewModels call use cases and map results to `UiState`
+- No Retrofit calls, no DTOs, no business logic in UI
+
+**Domain** (`domain/`)
+- `model/` — pure Kotlin data classes, no framework dependencies
+- `repository/` — interfaces (contracts) defining data operations
+- `usecase/` — single-responsibility business logic units
+
+**Data** (`data/`)
+- `remote/api/` — Retrofit `ApiService` interface
+- `remote/dto/` — JSON response shapes (never exposed to domain/presentation)
+- `remote/mapper/` — converts DTOs → domain models
+- `remote/datasource/` — wraps API calls, returns DTOs internally
+- `repository/` — implements domain interfaces, handles exceptions, returns `AppResult`
+
+**Core** (`core/`)
+- `result/AppResult` — `Success<T>` / `Error` wrapper for all async operations
+- `error/AppError` — typed errors: `Network`, `Server`, `Unknown`
+- `config/` — environment configuration
+- `network/` — network constants
+
+### Data flow (example: Home screen)
+
+```
+HomeScreen
+  → HomeViewModel.onEvent(LoadPhotos)
+    → GetPhotosUseCase.invoke()
+      → PhotoRepository.getRecentPhotos()         ← domain interface
+        → PhotoRepositoryImpl                      ← data implementation
+          → PhotoRemoteDataSource.getRecentPhotos()
+            → ApiService.getRecentPhotos()         ← Retrofit
+              ← FlickrResponse (DTO)
+            ← List<PhotoDto>
+          ← List<PhotoDto>
+        → PhotoMapper.toDomain()
+        ← AppResult<List<Photo>>                   ← domain model
+      ← AppResult<List<Photo>>
+    ← AppResult<List<Photo>>
+  → _uiState.update { HomeUiState(photos = ...) }
+HomeScreen re-renders from new UiState
+```
+
+### Rules for new features
+
+1. Add domain model in `domain/model/`
+2. Add repository interface in `domain/repository/`
+3. Add use case in `domain/usecase/`
+4. Add DTO in `data/remote/dto/`, mapper in `data/remote/mapper/`
+5. Add data source in `data/remote/datasource/`
+6. Implement repository in `data/repository/`
+7. Bind in `di/RepositoryModule`
+8. Add `UiState` + `Event` in `presentation/screen/<name>/`
+9. ViewModel calls use case only — never repository or API directly
+10. Screen renders state only — never calls use cases directly
+
+---
+
 ## Project Structure
 
 ```
 app/src/main/java/com/androidflicker/flickergallery/
 ├── core/
-│   ├── config/          # EnvironmentConfig, Environment enum
-│   └── network/         # NetworkConstants
+│   ├── config/          # Environment, EnvironmentConfig
+│   ├── error/           # AppError sealed class
+│   ├── network/         # NetworkConstants
+│   └── result/          # AppResult sealed class
 ├── data/
-│   ├── remote/api/      # ApiService (Retrofit)
-│   └── repository/      # Repository implementations
-├── di/                  # Hilt modules (AppModule, NetworkModule)
+│   ├── remote/
+│   │   ├── api/         # ApiService (Retrofit interface)
+│   │   ├── datasource/  # PhotoRemoteDataSource
+│   │   ├── dto/         # PhotoDto, FlickrResponse (never leave data layer)
+│   │   └── mapper/      # DTO → domain model mappers
+│   └── repository/      # PhotoRepositoryImpl
+├── di/                  # NetworkModule, RepositoryModule
 ├── domain/
-│   └── repository/      # Repository interfaces
+│   ├── model/           # Photo (pure Kotlin domain model)
+│   ├── repository/      # PhotoRepository interface
+│   └── usecase/         # GetPhotosUseCase
 └── presentation/
     ├── navigation/      # AppNavHost, NavRoutes
-    ├── screen/home/     # HomeScreen, HomeViewModel
+    ├── screen/home/     # HomeScreen, HomeViewModel, HomeUiState, HomeEvent
     └── theme/           # Color, Theme, Type
 ```
 
