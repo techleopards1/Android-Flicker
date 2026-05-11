@@ -134,7 +134,7 @@ jobs:
           path: build/reports/detekt/
           retention-days: 7
 
-  # ── 5. Formatting Check (ktlint) ────────────────────────────
+  # ── 5. Formatting Check (Spotless) ──────────────────────────
   formatting-check:
     name: Formatting Check
     runs-on: ubuntu-latest
@@ -154,13 +154,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run ktlint
-        run: ./gradlew ktlintCheck
+      - name: Run Spotless check
+        run: ./gradlew spotlessCheck
 
-      - name: Upload ktlint results
+      - name: Upload Spotless results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ktlint-results
-          path: app/build/reports/ktlint/
+          name: spotless-results
+          path: build/spotless-diagnose-*
           retention-days: 7

@@ -5,15 +5,28 @@ plugins {
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.detekt)
-    alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.spotless)
 }
 
 detekt {
     config.setFrom("$rootDir/config/detekt/detekt.yml")
     source.setFrom(
         "app/src/main/java",
-        "app/src/test/java"
+        "app/src/test/java",
     )
     parallel = true
     autoCorrect = false
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        targetExclude("**/build/**/*.kt")
+        ktlint("1.3.1")
+    }
+    kotlinGradle {
+        target("**/*.kts")
+        targetExclude("**/build/**/*.kts")
+        ktlint("1.3.1")
+    }
 }
