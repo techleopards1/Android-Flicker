@@ -1,8 +1,6 @@
 package com.androidflicker.flickergallery.presentation.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +17,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.androidflicker.flickergallery.presentation.screen.home.HomeItemUiModel
 import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 
@@ -44,19 +41,12 @@ fun PosterCard(
                     .clickable { onItemClick(item) },
             shape = RoundedCornerShape(PosterCornerRadius),
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-            ) {
-                AsyncImage(
-                    model = item.imageUrl.ifEmpty { null },
-                    contentDescription = item.title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+            AppAsyncImage(
+                imageUrl = item.imageUrl,
+                contentDescription = item.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
 
         Text(
@@ -89,8 +79,25 @@ private fun PosterCardPreview() {
                 HomeItemUiModel(
                     id = "1",
                     title = "Golden Gate at Sunset",
-                    imageUrl = "",
+                    imageUrl = "https://example.com/photo.jpg",
                     subtitle = "by photographer",
+                ),
+            onItemClick = {},
+            modifier = Modifier.padding(8.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PosterCardEmptyUrlPreview() {
+    FlickerGalleryTheme {
+        PosterCard(
+            item =
+                HomeItemUiModel(
+                    id = "2",
+                    title = "Photo with no image",
+                    imageUrl = "",
                 ),
             onItemClick = {},
             modifier = Modifier.padding(8.dp),

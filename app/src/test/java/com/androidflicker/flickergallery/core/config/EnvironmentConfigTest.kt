@@ -12,8 +12,8 @@ class EnvironmentConfigTest {
     }
 
     @Test
-    fun `apiBaseUrl points to dev endpoint in devDebug variant`() {
-        assertEquals("https://dev-api.flickr.com/", EnvironmentConfig.apiBaseUrl)
+    fun `apiBaseUrl points to Flickr API in devDebug variant`() {
+        assertEquals("https://www.flickr.com/", EnvironmentConfig.apiBaseUrl)
     }
 
     @Test
