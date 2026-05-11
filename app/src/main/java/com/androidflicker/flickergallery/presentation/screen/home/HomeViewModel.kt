@@ -33,16 +33,18 @@ class HomeViewModel
 
         fun loadCategories() {
             viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                _uiState.update { it.copy(isLoading = true, errorMessage = null, isEmpty = false) }
 
                 val results = getHomeCategoriesUseCase()
                 val categories = results.map { it.toCategoryUiModel() }
                 val allFailed = categories.isNotEmpty() && categories.all { it.errorMessage != null }
+                val allEmpty = categories.isNotEmpty() && categories.all { it.isEmpty }
 
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         categories = categories,
+                        isEmpty = allEmpty,
                         errorMessage = if (allFailed) categories.first().errorMessage else null,
                     )
                 }

@@ -5,6 +5,7 @@ import com.androidflicker.flickergallery.core.result.AppResult
 import com.androidflicker.flickergallery.domain.model.HomeCategory
 import com.androidflicker.flickergallery.domain.model.Photo
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -50,14 +51,25 @@ class HomeUiMapperTest {
         assertEquals(HomeCategory.NATURE.displayTitle, model.title)
         assertEquals(1, model.items.size)
         assertNull(model.errorMessage)
+        assertFalse(model.isEmpty)
     }
 
     @Test
-    fun `error pair maps to category ui model with empty items and error message`() {
+    fun `success with empty list maps to isEmpty true`() {
+        val pair = HomeCategory.NATURE to AppResult.Success(emptyList<Photo>()) as AppResult<List<Photo>>
+        val model = pair.toCategoryUiModel()
+        assertTrue(model.isEmpty)
+        assertTrue(model.items.isEmpty())
+        assertNull(model.errorMessage)
+    }
+
+    @Test
+    fun `error pair maps to isEmpty false and sets error message`() {
         val pair = HomeCategory.SPACE to AppResult.Error(AppError.Network()) as AppResult<List<Photo>>
         val model = pair.toCategoryUiModel()
         assertEquals(HomeCategory.SPACE.id, model.id)
         assertTrue(model.items.isEmpty())
+        assertFalse(model.isEmpty)
         assertNotNull(model.errorMessage)
     }
 }

@@ -20,10 +20,12 @@ fun AppResult<List<Photo>>.toHomeItemUiModels(): List<HomeItemUiModel> =
 
 fun Pair<HomeCategory, AppResult<List<Photo>>>.toCategoryUiModel(): HomeCategoryUiModel {
     val (category, result) = this
+    val items = result.toHomeItemUiModels()
     return HomeCategoryUiModel(
         id = category.id,
         title = category.displayTitle,
-        items = result.toHomeItemUiModels(),
+        items = items,
+        isEmpty = result is AppResult.Success && items.isEmpty(),
         errorMessage = (result as? AppResult.Error)?.error?.userMessage(),
     )
 }
