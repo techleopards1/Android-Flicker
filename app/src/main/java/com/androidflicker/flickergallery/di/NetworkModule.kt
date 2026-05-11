@@ -19,38 +19,42 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
     @Provides
     @Singleton
     fun provideGson(): Gson = GsonBuilder().create()
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(
-            HttpLoggingInterceptor().apply {
-                level = if (EnvironmentConfig.enableLogging) {
-                    HttpLoggingInterceptor.Level.BODY
-                } else {
-                    HttpLoggingInterceptor.Level.NONE
-                }
-            }
-        )
-        .connectTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .readTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .writeTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .build()
+    fun provideOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(
+                HttpLoggingInterceptor().apply {
+                    level =
+                        if (EnvironmentConfig.enableLogging) {
+                            HttpLoggingInterceptor.Level.BODY
+                        } else {
+                            HttpLoggingInterceptor.Level.NONE
+                        }
+                },
+            )
+            .connectTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build()
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit = Retrofit.Builder()
-        .baseUrl(EnvironmentConfig.apiBaseUrl)
-        .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .build()
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson,
+    ): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(EnvironmentConfig.apiBaseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService =
-        retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
 }

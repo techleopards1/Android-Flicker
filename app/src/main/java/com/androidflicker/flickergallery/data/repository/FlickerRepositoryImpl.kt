@@ -4,6 +4,8 @@ import com.androidflicker.flickergallery.data.remote.api.ApiService
 import com.androidflicker.flickergallery.domain.repository.FlickerRepository
 import javax.inject.Inject
 
-class FlickerRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
-) : FlickerRepository
+class FlickerRepositoryImpl
+    @Inject
+    constructor(
+        private val apiService: ApiService,
+    ) : FlickerRepository

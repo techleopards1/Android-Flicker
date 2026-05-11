@@ -12,9 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel()
-) {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     HomeContent()
 }
 
@@ -22,11 +20,11 @@ fun HomeScreen(
 private fun HomeContent() {
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = "Android Flicker App",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
         )
     }
 }
