@@ -217,6 +217,47 @@ Rules are configured in `config/detekt/detekt.yml`. Key decisions:
 
 ---
 
+## Repository Pattern
+
+The Repository Pattern abstracts the data layer from ViewModels. ViewModels never call `ApiService`, reference DTOs, or know how data is fetched or cached.
+
+### Dependency direction
+
+```
+ViewModel → UseCase → PhotoRepository (interface) → PhotoRepositoryImpl → PhotoRemoteDataSource → ApiService
+```
+
+Domain layer defines the contract; data layer implements it. The domain has zero knowledge of Retrofit, OkHttp, or DTOs.
+
+### Where things live
+
+| Concern | Location |
+|---|---|
+| Repository interface | `domain/repository/PhotoRepository.kt` |
+| Repository implementation | `data/repository/PhotoRepositoryImpl.kt` |
+| Remote data source | `data/remote/datasource/PhotoRemoteDataSource.kt` |
+| DTO-to-domain mapping | `data/remote/mapper/PhotoMapper.kt` |
+| Hilt binding | `di/RepositoryModule.kt` |
+
+### Rules
+
+- ViewModels must **never** call `ApiService` directly
+- ViewModels must **never** reference DTOs
+- DTOs stay inside the data layer — they are never passed to use cases or UI
+- Repository methods return `AppResult<DomainModel>`, not raw API responses
+- `safeApiCall` in every repository method converts all exceptions to typed `AppError`
+
+### How to add a new repository method
+
+1. Add `suspend fun newMethod(): AppResult<DomainModel>` to `PhotoRepository` interface
+2. Implement it in `PhotoRepositoryImpl` using `withContext(ioDispatcher) { safeApiCall { ... } }`
+3. Add the corresponding method to `PhotoRemoteDataSource`
+4. Add the endpoint to `ApiService`
+5. Add any new DTO to `data/remote/dto/` and mapper to `data/remote/mapper/`
+6. Create a use case in `domain/usecase/` if business logic is needed
+
+---
+
 ## Network Layer
 
 The app targets the **Flickr API** (`https://api.flickr.com/`). All network calls go through the Clean Architecture stack — raw Retrofit exceptions never reach the UI.
