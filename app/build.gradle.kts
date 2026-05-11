@@ -4,7 +4,49 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    jacoco
 }
+
+// ── JaCoCo version ────────────────────────────────────────────────────────────
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// ── Coverage exclusions ───────────────────────────────────────────────────────
+// Excludes generated, framework, and DI boilerplate from coverage calculation.
+// Do NOT add real business logic classes here.
+val coverageExclusions = listOf(
+    // Android generated
+    "**/R.class",
+    "**/R\$*.class",
+    "**/BuildConfig.*",
+    "**/Manifest*.*",
+    // Hilt / Dagger generated
+    "**/*Hilt_*.*",
+    "**/*_HiltModules*.*",
+    "**/Dagger*.*",
+    "**/*_Factory.*",
+    "**/*_Factory\$*.*",
+    "**/*_MembersInjector.*",
+    "**/*_MembersInjector\$*.*",
+    "**/*_GeneratedInjector*.*",
+    "**/*_ComponentTreeDeps*.*",
+    // Compose generated
+    "**/*ComposableSingletons*.*",
+    // UI-only / theme / navigation / screens (no testable logic)
+    "**/presentation/theme/**",
+    "**/presentation/navigation/**",
+    "**/presentation/screen/**",
+    "**/*Preview*.*",
+    // Hilt DI modules (wiring only, covered by integration tests)
+    "**/di/**",
+    // Android entry points (no unit-testable logic)
+    "**/FlickerGalleryApp.*",
+    "**/MainActivity.*",
+    // Interfaces (no implementation to cover)
+    "**/domain/repository/**",
+    "**/data/remote/api/**",
+)
 
 android {
     namespace = "com.androidflicker.flickergallery"
@@ -48,6 +90,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Enables JaCoCo instrumentation for unit tests on all debug variants
+            enableUnitTestCoverage = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -56,6 +102,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -67,6 +114,84 @@ android {
         compose = true
         buildConfig = true
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.configure<JacocoTaskExtension> {
+                    isIncludeNoLocationClasses = true
+                    // Required to avoid issues with newer JDKs
+                    excludes = listOf("jdk.internal.*")
+                }
+            }
+        }
+    }
+}
+
+// ── JaCoCo report task — devDebug ─────────────────────────────────────────────
+tasks.register<JacocoReport>("jacocoDevDebugReport") {
+    dependsOn("testDevDebugUnitTest")
+    group = "verification"
+    description = "Generates JaCoCo coverage report for the devDebug variant."
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        xml.outputLocation.set(
+            layout.buildDirectory.file("reports/jacoco/devDebug/jacocoDevDebugReport.xml"),
+        )
+        html.outputLocation.set(
+            layout.buildDirectory.dir("reports/jacoco/devDebug/html"),
+        )
+    }
+
+    sourceDirectories.setFrom(files("${projectDir}/src/main/java"))
+    classDirectories.setFrom(
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/devDebug") {
+            exclude(coverageExclusions)
+        },
+    )
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get()) {
+            include(
+                "outputs/unit_test_code_coverage/devDebugUnitTest/testDevDebugUnitTest.exec",
+                "jacoco/testDevDebugUnitTest.exec",
+            )
+        },
+    )
+}
+
+// ── JaCoCo coverage verification task — devDebug ──────────────────────────────
+tasks.register<JacocoCoverageVerification>("jacocoDevDebugCoverageVerification") {
+    dependsOn("jacocoDevDebugReport")
+    group = "verification"
+    description = "Verifies that devDebug unit test coverage meets the 70% threshold."
+
+    violationRules {
+        rule {
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
+            }
+        }
+    }
+
+    sourceDirectories.setFrom(files("${projectDir}/src/main/java"))
+    classDirectories.setFrom(
+        fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/devDebug") {
+            exclude(coverageExclusions)
+        },
+    )
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get()) {
+            include(
+                "outputs/unit_test_code_coverage/devDebugUnitTest/testDevDebugUnitTest.exec",
+                "jacoco/testDevDebugUnitTest.exec",
+            )
+        },
+    )
 }
 
 dependencies {
