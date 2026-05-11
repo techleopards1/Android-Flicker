@@ -7,7 +7,7 @@ import com.androidflicker.flickergallery.domain.model.Photo
 import com.androidflicker.flickergallery.domain.model.PhotoDetails
 import com.androidflicker.flickergallery.domain.repository.PhotoRepository
 import com.androidflicker.flickergallery.domain.usecase.GetPhotoDetailsUseCase
-import com.androidflicker.flickergallery.presentation.navigation.NavRoutes
+import com.androidflicker.flickergallery.presentation.navigation.AppDestination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -41,7 +41,7 @@ class DetailViewModelTest {
 
     private fun createViewModel(photoId: String = "photo-1") =
         DetailViewModel(
-            savedStateHandle = SavedStateHandle(mapOf(NavRoutes.Details.ARG_PHOTO_ID to photoId)),
+            savedStateHandle = SavedStateHandle(mapOf(AppDestination.Detail.ARG_PHOTO_ID to photoId)),
             getPhotoDetailsUseCase = GetPhotoDetailsUseCase(repository),
         )
 

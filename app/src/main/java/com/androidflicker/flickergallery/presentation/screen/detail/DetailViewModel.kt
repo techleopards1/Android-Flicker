@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.androidflicker.flickergallery.core.error.userMessage
 import com.androidflicker.flickergallery.core.result.AppResult
 import com.androidflicker.flickergallery.domain.usecase.GetPhotoDetailsUseCase
-import com.androidflicker.flickergallery.presentation.navigation.NavRoutes
+import com.androidflicker.flickergallery.presentation.navigation.AppDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +23,7 @@ class DetailViewModel
         private val getPhotoDetailsUseCase: GetPhotoDetailsUseCase,
     ) : ViewModel() {
         private val photoId: String =
-            savedStateHandle[NavRoutes.Details.ARG_PHOTO_ID] ?: ""
+            savedStateHandle[AppDestination.Detail.ARG_PHOTO_ID] ?: ""
 
         private val _uiState = MutableStateFlow(DetailUiState())
         val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()

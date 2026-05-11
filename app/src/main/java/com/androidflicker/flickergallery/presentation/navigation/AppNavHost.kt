@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.androidflicker.flickergallery.presentation.screen.detail.DetailScreen
 import com.androidflicker.flickergallery.presentation.screen.home.HomeScreen
 
@@ -14,27 +15,31 @@ import com.androidflicker.flickergallery.presentation.screen.home.HomeScreen
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.Home.route,
+        startDestination = AppDestination.Home.route,
     ) {
-        composable(NavRoutes.Home.route) {
+        composable(AppDestination.Home.route) {
             HomeScreen(
                 onNavigateToDetails = { photoId ->
-                    navController.navigate(NavRoutes.Details.createRoute(photoId))
+                    navController.navigateToDetail(photoId)
                 },
             )
         }
 
         composable(
-            route = NavRoutes.Details.route,
+            route = AppDestination.Detail.route,
             arguments =
                 listOf(
-                    navArgument(NavRoutes.Details.ARG_PHOTO_ID) {
+                    navArgument(AppDestination.Detail.ARG_PHOTO_ID) {
                         type = NavType.StringType
                     },
                 ),
+            deepLinks =
+                listOf(
+                    navDeepLink { uriPattern = AppDeepLinks.detailPattern() },
+                ),
         ) {
             DetailScreen(
-                onNavigateBack = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStackSafely() },
             )
         }
     }
