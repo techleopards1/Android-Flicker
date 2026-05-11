@@ -23,6 +23,17 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Deep link: androidflicker://photo/{photoId}
+                 TODO: Add HTTPS App Links with assetlinks.json when a production domain is ready -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="androidflicker"
+                    android:host="photo" />
+            </intent-filter>
         </activity>
     </application>
 
