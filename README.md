@@ -64,7 +64,7 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 | Unit Tests | `./gradlew testDevDebugUnitTest` | Unit test suite |
 | Lint | `./gradlew lintDevDebug` | Android lint rules |
 | Static Analysis | `./gradlew detekt` | Code quality (Detekt) |
-| Formatting | `./gradlew ktlintCheck` | Code style (ktlint) |
+| Formatting | `./gradlew spotlessCheck` | Code style (Spotless + ktlint) |
 
 ### Run checks locally before pushing
 
@@ -82,10 +82,10 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 ./gradlew detekt
 
 # Formatting check
-./gradlew ktlintCheck
+./gradlew spotlessCheck
 
 # Auto-fix formatting
-./gradlew ktlintFormat
+./gradlew spotlessApply
 ```
 
 ---

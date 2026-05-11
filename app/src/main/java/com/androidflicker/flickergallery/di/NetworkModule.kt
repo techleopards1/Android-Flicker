@@ -26,7 +26,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder()
+        OkHttpClient
+            .Builder()
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level =
@@ -36,8 +37,7 @@ object NetworkModule {
                             HttpLoggingInterceptor.Level.NONE
                         }
                 },
-            )
-            .connectTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            ).connectTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(NetworkConstants.TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
@@ -48,7 +48,8 @@ object NetworkModule {
         okHttpClient: OkHttpClient,
         gson: Gson,
     ): Retrofit =
-        Retrofit.Builder()
+        Retrofit
+            .Builder()
             .baseUrl(EnvironmentConfig.apiBaseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
