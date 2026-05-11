@@ -2,12 +2,11 @@ package com.androidflicker.flickergallery.presentation.screen.home
 
 import com.androidflicker.flickergallery.core.error.AppError
 import com.androidflicker.flickergallery.core.result.AppResult
+import com.androidflicker.flickergallery.domain.model.HomeCategory
 import com.androidflicker.flickergallery.domain.model.Photo
 import com.androidflicker.flickergallery.domain.model.PhotoDetails
 import com.androidflicker.flickergallery.domain.repository.PhotoRepository
-import com.androidflicker.flickergallery.domain.usecase.GetPopularPhotosUseCase
-import com.androidflicker.flickergallery.domain.usecase.GetRecentPhotosUseCase
-import com.androidflicker.flickergallery.domain.usecase.SearchPhotosUseCase
+import com.androidflicker.flickergallery.domain.usecase.GetHomeCategoriesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -39,12 +38,7 @@ class HomeViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel() =
-        HomeViewModel(
-            getRecentPhotosUseCase = GetRecentPhotosUseCase(repository),
-            getPopularPhotosUseCase = GetPopularPhotosUseCase(repository),
-            searchPhotosUseCase = SearchPhotosUseCase(repository),
-        )
+    private fun createViewModel() = HomeViewModel(GetHomeCategoriesUseCase(repository))
 
     @Test
     fun `after load completes loading is false`() =
@@ -60,7 +54,7 @@ class HomeViewModelTest {
         }
 
     @Test
-    fun `successful load populates all sections`() =
+    fun `successful load populates all 10 category rows`() =
         runTest {
             val photo = Photo(id = "1", title = "Title", imageUrl = "url", owner = "owner")
             repository.popularResult = AppResult.Success(listOf(photo))
@@ -72,14 +66,12 @@ class HomeViewModelTest {
 
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
-            assertEquals(1, state.popularItems.size)
-            assertEquals(1, state.recentItems.size)
-            assertEquals(1, state.trendingItems.size)
+            assertEquals(HomeCategory.entries.size, state.categories.size)
             assertNull(state.errorMessage)
         }
 
     @Test
-    fun `all sections error shows error message`() =
+    fun `all categories error shows screen-level error message`() =
         runTest {
             val error = AppError.Network()
             repository.popularResult = AppResult.Error(error)
@@ -92,12 +84,10 @@ class HomeViewModelTest {
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
             assertNotNull(state.errorMessage)
-            assertTrue(state.popularItems.isEmpty())
-            assertTrue(state.recentItems.isEmpty())
         }
 
     @Test
-    fun `partial error still shows available sections`() =
+    fun `partial error shows row-level error without screen error`() =
         runTest {
             val photo = Photo(id = "2", title = "Photo", imageUrl = "url", owner = "owner")
             repository.popularResult = AppResult.Error(AppError.Network())
@@ -109,14 +99,16 @@ class HomeViewModelTest {
 
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
-            assertTrue(state.popularItems.isEmpty())
-            assertEquals(1, state.recentItems.size)
-            assertEquals(1, state.trendingItems.size)
             assertNull(state.errorMessage)
+            val popular = state.categories.find { it.id == HomeCategory.POPULAR.id }
+            assertNotNull(popular?.errorMessage)
+            assertTrue(popular?.items?.isEmpty() == true)
+            val recent = state.categories.find { it.id == HomeCategory.RECENT.id }
+            assertEquals(1, recent?.items?.size)
         }
 
     @Test
-    fun `retry reloads content`() =
+    fun `retry reloads all categories`() =
         runTest {
             repository.popularResult = AppResult.Error(AppError.Network())
             repository.recentResult = AppResult.Error(AppError.Network())
@@ -135,8 +127,8 @@ class HomeViewModelTest {
 
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
-            assertEquals(1, state.popularItems.size)
             assertNull(state.errorMessage)
+            state.categories.forEach { assertTrue(it.items.isNotEmpty()) }
         }
 
     @Test
@@ -150,13 +142,44 @@ class HomeViewModelTest {
             val viewModel = createViewModel()
             testDispatcher.scheduler.advanceUntilIdle()
 
-            val item =
-                viewModel.uiState.value.popularItems
-                    .first()
-            assertEquals("42", item.id)
-            assertEquals("Test Title", item.title)
-            assertEquals("http://img", item.imageUrl)
-            assertEquals("Test Owner", item.subtitle)
+            val popular =
+                viewModel.uiState.value.categories
+                    .find { it.id == HomeCategory.POPULAR.id }
+            val item = popular?.items?.first()
+            assertEquals("42", item?.id)
+            assertEquals("Test Title", item?.title)
+            assertEquals("http://img", item?.imageUrl)
+            assertEquals("Test Owner", item?.subtitle)
+        }
+
+    @Test
+    fun `categories list contains all required category ids`() =
+        runTest {
+            repository.popularResult = AppResult.Success(emptyList())
+            repository.recentResult = AppResult.Success(emptyList())
+            repository.searchResult = AppResult.Success(emptyList())
+
+            val viewModel = createViewModel()
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val ids =
+                viewModel.uiState.value.categories
+                    .map { it.id }
+                    .toSet()
+            val required =
+                setOf(
+                    "nature",
+                    "animals",
+                    "architecture",
+                    "historical",
+                    "popular",
+                    "trending",
+                    "technology",
+                    "space",
+                    "travel",
+                    "recent",
+                )
+            assertTrue(ids.containsAll(required))
         }
 }
 

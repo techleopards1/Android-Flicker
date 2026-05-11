@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -33,10 +34,8 @@ private val HeaderHorizontalPadding = 16.dp
 private val HeaderVerticalPadding = 8.dp
 private val ErrorRetrySpacing = 16.dp
 
-private const val SECTION_POPULAR = "Popular"
-private const val SECTION_RECENT = "Recently Added"
-private const val SECTION_TRENDING = "Trending Now"
 private const val PREVIEW_ITEM_COUNT = 6
+private const val PREVIEW_CATEGORY_COUNT = 10
 
 @Composable
 fun HomeScreen(
@@ -60,7 +59,7 @@ fun HomeContent(
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> HomeLoadingState()
-            uiState.errorMessage != null && uiState.popularItems.isEmpty() ->
+            uiState.errorMessage != null ->
                 HomeErrorState(
                     message = uiState.errorMessage,
                     onRetry = { onEvent(HomeEvent.RetryLoad) },
@@ -86,34 +85,16 @@ private fun HomeSections(
     ) {
         item { HomeHeader() }
 
-        if (uiState.popularItems.isNotEmpty()) {
-            item {
-                SwimlaneSection(
-                    title = SECTION_POPULAR,
-                    items = uiState.popularItems,
-                    onItemClick = { onNavigateToDetails(it.id) },
-                )
-            }
-        }
-
-        if (uiState.recentItems.isNotEmpty()) {
-            item {
-                SwimlaneSection(
-                    title = SECTION_RECENT,
-                    items = uiState.recentItems,
-                    onItemClick = { onNavigateToDetails(it.id) },
-                )
-            }
-        }
-
-        if (uiState.trendingItems.isNotEmpty()) {
-            item {
-                SwimlaneSection(
-                    title = SECTION_TRENDING,
-                    items = uiState.trendingItems,
-                    onItemClick = { onNavigateToDetails(it.id) },
-                )
-            }
+        items(
+            items = uiState.categories,
+            key = { it.id },
+        ) { category ->
+            SwimlaneSection(
+                title = category.title,
+                items = category.items,
+                onItemClick = { onNavigateToDetails(it.id) },
+                errorMessage = category.errorMessage,
+            )
         }
     }
 }
@@ -169,17 +150,23 @@ private fun HomeErrorState(
     }
 }
 
+private fun previewCategories(count: Int = PREVIEW_CATEGORY_COUNT): List<HomeCategoryUiModel> {
+    val names = listOf("Nature", "Animals", "Architecture", "Historical", "Popular", "Trending", "Technology", "Space", "Travel", "Recent")
+    return names.take(count).mapIndexed { index, name ->
+        HomeCategoryUiModel(
+            id = name.lowercase(),
+            title = name,
+            items = List(PREVIEW_ITEM_COUNT) { i -> HomeItemUiModel("${name}_$i", "Photo $i", "") },
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun HomeContentPreview() {
     FlickerGalleryTheme {
         HomeContent(
-            uiState =
-                HomeUiState(
-                    popularItems = List(PREVIEW_ITEM_COUNT) { i -> HomeItemUiModel("p$i", "Popular Photo $i", "") },
-                    recentItems = List(PREVIEW_ITEM_COUNT) { i -> HomeItemUiModel("r$i", "Recent Photo $i", "") },
-                    trendingItems = List(PREVIEW_ITEM_COUNT) { i -> HomeItemUiModel("t$i", "Trending Photo $i", "") },
-                ),
+            uiState = HomeUiState(categories = previewCategories()),
             onEvent = {},
         )
     }
@@ -198,5 +185,28 @@ private fun HomeLoadingPreview() {
 private fun HomeErrorPreview() {
     FlickerGalleryTheme {
         HomeContent(uiState = HomeUiState(errorMessage = "No internet connection"), onEvent = {})
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeEmptyCategoryPreview() {
+    FlickerGalleryTheme {
+        HomeContent(
+            uiState =
+                HomeUiState(
+                    categories =
+                        listOf(
+                            HomeCategoryUiModel(id = "nature", title = "Nature", items = emptyList()),
+                            HomeCategoryUiModel(
+                                id = "space",
+                                title = "Space",
+                                items = emptyList(),
+                                errorMessage = "No internet connection",
+                            ),
+                        ),
+                ),
+            onEvent = {},
+        )
     }
 }

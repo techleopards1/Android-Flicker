@@ -20,6 +20,7 @@ import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 private val SectionTitleBottomPadding = 10.dp
 private val SectionHorizontalPadding = 16.dp
 private val SectionItemSpacing = 12.dp
+private val SectionStatusVerticalPadding = 8.dp
 private const val PREVIEW_ITEM_COUNT = 5
 
 @Composable
@@ -28,6 +29,7 @@ fun SwimlaneSection(
     items: List<HomeItemUiModel>,
     onItemClick: (HomeItemUiModel) -> Unit,
     modifier: Modifier = Modifier,
+    errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -41,16 +43,41 @@ fun SwimlaneSection(
                     bottom = SectionTitleBottomPadding,
                 ),
         )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = SectionHorizontalPadding),
-            horizontalArrangement = Arrangement.spacedBy(SectionItemSpacing),
-        ) {
-            items(items = items, key = { it.id }) { item ->
-                PosterCard(
-                    item = item,
-                    onItemClick = onItemClick,
+        when {
+            errorMessage != null ->
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier =
+                        Modifier.padding(
+                            horizontal = SectionHorizontalPadding,
+                            vertical = SectionStatusVerticalPadding,
+                        ),
                 )
-            }
+            items.isEmpty() ->
+                Text(
+                    text = "No items available",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    modifier =
+                        Modifier.padding(
+                            horizontal = SectionHorizontalPadding,
+                            vertical = SectionStatusVerticalPadding,
+                        ),
+                )
+            else ->
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = SectionHorizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(SectionItemSpacing),
+                ) {
+                    items(items = items, key = { it.id }) { item ->
+                        PosterCard(
+                            item = item,
+                            onItemClick = onItemClick,
+                        )
+                    }
+                }
         }
     }
 }
@@ -71,6 +98,31 @@ private fun SwimlaneSectionPreview() {
                     )
                 },
             onItemClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SwimlaneSectionEmptyPreview() {
+    FlickerGalleryTheme {
+        SwimlaneSection(
+            title = "Space",
+            items = emptyList(),
+            onItemClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SwimlaneSectionErrorPreview() {
+    FlickerGalleryTheme {
+        SwimlaneSection(
+            title = "Travel",
+            items = emptyList(),
+            onItemClick = {},
+            errorMessage = "No internet connection",
         )
     }
 }
