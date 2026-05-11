@@ -1,5 +1,8 @@
 # Detekt configuration for Android Flicker
 # Docs: https://detekt.dev/docs/configuration/
+#
+# Philosophy: strict enough to catch real problems, lenient enough to avoid
+# blocking idiomatic Kotlin/Compose/Hilt patterns.
 
 build:
   maxIssues: 0
@@ -9,62 +12,328 @@ config:
   validation: true
   warningsAsErrors: false
 
-# ── Complexity ────────────────────────────────────────────────
+# ── Complexity ────────────────────────────────────────────────────────────────
 complexity:
+  active: true
+
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+    ignoreSingleWhenExpression: true
+
+  CognitiveComplexMethod:
+    active: true
+    threshold: 15
+
   LongMethod:
+    active: true
     threshold: 60
+    ignoreAnnotated:
+      - 'Composable'
+
   LongParameterList:
+    active: true
     functionThreshold: 8
     constructorThreshold: 8
     ignoreDefaultParameters: true
-    ignoreAnnotated: [ 'Composable' ]  # Composable functions naturally have many params
+    ignoreAnnotated:
+      - 'Composable'
+
   TooManyFunctions:
+    active: true
     thresholdInFiles: 20
     thresholdInClasses: 15
     thresholdInInterfaces: 10
     thresholdInObjects: 15
     thresholdInEnums: 15
-  CognitiveComplexMethod:
-    threshold: 15
 
-# ── Naming ────────────────────────────────────────────────────
+  LargeClass:
+    active: true
+    threshold: 300
+
+  NestedBlockDepth:
+    active: true
+    threshold: 4
+
+  StringLiteralDuplication:
+    active: true
+    threshold: 3
+    ignoreAnnotation: true
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+
+  ComplexCondition:
+    active: true
+    threshold: 4
+
+# ── Naming ────────────────────────────────────────────────────────────────────
 naming:
+  active: true
+
   FunctionNaming:
     active: true
-    # Allow PascalCase so Jetpack Compose @Composable functions pass without suppression
+    # PascalCase allowed so @Composable functions pass without suppression
     functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
-    excludes: [ '**/test/**', '**/androidTest/**' ]
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+
+  VariableNaming:
+    active: true
+    variablePattern: '[a-z][A-Za-z0-9]*'
+    privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
+
   TopLevelPropertyNaming:
     active: true
-    # Allow PascalCase top-level vals (e.g. Color palette, Typography)
+    # PascalCase top-level vals allowed (Color palette, Typography, etc.)
     constantPattern: '[A-Za-z][_A-Za-z0-9]*'
     propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
 
-# ── Style ─────────────────────────────────────────────────────
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+
+  PackageNaming:
+    active: true
+    packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
+
+# ── Style ─────────────────────────────────────────────────────────────────────
 style:
+  active: true
+
   MagicNumber:
-    active: false  # Color values and dimension constants make this too noisy for UI code
+    active: true
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreLocalVariableDeclaration: false
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+    ignoreRanges: false
+    ignoreExtensionFunctions: true
+
   MaxLineLength:
     active: true
     maxLineLength: 140
     excludePackageStatements: true
     excludeImportStatements: true
+
   WildcardImport:
-    active: false  # Compose APIs are commonly imported with wildcards
+    active: true
+    excludeImports:
+      - 'androidx.compose.ui.*'
+      - 'androidx.compose.material3.*'
+      - 'androidx.compose.foundation.*'
+      - 'androidx.compose.runtime.*'
+
   ReturnCount:
+    active: true
     max: 4
     excludeGuardClauses: true
+
   UnusedPrivateMember:
     active: true
     allowedNames: '(_|ignored|expected|serialVersionUID)'
-    ignoreAnnotated: [ 'Preview' ]  # Compose preview functions are used by tooling
+    ignoreAnnotated:
+      - 'Preview'
 
-# ── Coroutines ────────────────────────────────────────────────
+  UnusedImports:
+    active: true
+
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'Unresolved bug marker — fix before merging'
+        value: 'FIXME:'
+      - reason: 'Must not ship — remove or resolve before release'
+        value: 'STOPSHIP:'
+    allowedPatterns: ''
+
+  UnnecessaryAbstractClass:
+    active: true
+
+  UseDataClass:
+    active: true
+    ignoreAnnotated:
+      - 'Entity'
+      - 'JsonClass'
+
+  DataClassContainsFunctions:
+    active: false
+
+  NewLineAtEndOfFile:
+    active: true
+
+  TrailingWhitespace:
+    active: true
+
+# ── Potential Bugs ────────────────────────────────────────────────────────────
+potential-bugs:
+  active: true
+
+  UnsafeCast:
+    active: true
+
+  UnsafeCallOnNullableType:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+
+  UnreachableCode:
+    active: true
+
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: true
+
+  ExplicitGarbageCollectionCall:
+    active: true
+
+  HasPlatformType:
+    active: true
+
+  IgnoredReturnValue:
+    active: true
+    restrictToConfig: true
+    returnValueAnnotations:
+      - '*.CheckResult'
+      - '*.CheckReturnValue'
+
+  NullableToStringCall:
+    active: true
+
+  UnconditionalJumpStatementInLoop:
+    active: true
+
+# ── Exceptions ────────────────────────────────────────────────────────────────
+exceptions:
+  active: true
+
+  SwallowedException:
+    active: true
+    ignoredExceptionTypes:
+      - 'InterruptedException'
+      - 'MalformedURLException'
+      - 'NumberFormatException'
+      - 'ParseException'
+    allowedExceptionNameRegex: '(_|(ignored|expected).*)'
+
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Error'
+      - 'Exception'
+      - 'IllegalMonitorStateException'
+      - 'NullPointerException'
+      - 'IndexOutOfBoundsException'
+      - 'RuntimeException'
+      - 'Throwable'
+    allowedExceptionNameRegex: '(_|(ignored|expected).*)'
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+
+  TooGenericExceptionThrown:
+    active: true
+    exceptionNames:
+      - 'Error'
+      - 'Exception'
+      - 'Throwable'
+      - 'RuntimeException'
+
+  PrintStackTrace:
+    active: true
+
+  RethrowCaughtException:
+    active: true
+
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: true
+
+  ThrowingNewInstanceOfSameException:
+    active: true
+
+# ── Coroutines ────────────────────────────────────────────────────────────────
 coroutines:
+  active: true
+
   GlobalCoroutineUsage:
     active: true
+
   RedundantSuspendModifier:
     active: true
+
   SuspendFunWithFlowReturnType:
+    active: true
+
+  InjectDispatcher:
+    active: true
+    dispatcherNames:
+      - 'IO'
+      - 'Default'
+      - 'Unconfined'
+
+# ── Performance ───────────────────────────────────────────────────────────────
+performance:
+  active: true
+
+  SpreadOperator:
+    active: true
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+
+  ArrayPrimitive:
+    active: true
+
+  CouldBeSequence:
+    active: true
+    threshold: 3
+
+# ── Empty blocks ──────────────────────────────────────────────────────────────
+empty-blocks:
+  active: true
+
+  EmptyCatchBlock:
+    active: true
+    allowedExceptionNameRegex: '(_|(ignored|expected).*)'
+
+  EmptyClassBlock:
+    active: true
+
+  EmptyDefaultConstructor:
+    active: true
+
+  EmptyFinallyBlock:
+    active: true
+
+  EmptyIfBlock:
+    active: true
+
+  EmptyInitBlock:
+    active: true
+
+  EmptyKtFile:
+    active: true
+
+  EmptySecondaryConstructor:
+    active: true
+
+  EmptyTryBlock:
+    active: true
+
+  EmptyWhenBlock:
+    active: true
+
+  EmptyWhileBlock:
     active: true
