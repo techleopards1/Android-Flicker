@@ -1,7 +1,9 @@
 package com.androidflicker.flickergallery.presentation.screen.home
 
-data class HomeUiState(
+data class HomeCategoryUiModel(
+    val id: String,
+    val title: String,
+    val items: List<HomeItemUiModel>,
     val isLoading: Boolean = false,
-    val categories: List<HomeCategoryUiModel> = emptyList(),
     val errorMessage: String? = null,
 )
