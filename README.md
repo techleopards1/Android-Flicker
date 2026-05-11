@@ -61,7 +61,7 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 | Job | Command | What it checks |
 |---|---|---|
 | Build | `./gradlew assembleDevDebug` | Project compiles |
-| Unit Tests | `./gradlew testDevDebugUnitTest` | Unit test suite |
+| Unit Tests & Coverage | `./gradlew testDevDebugUnitTest jacocoDevDebugReport jacocoDevDebugCoverageVerification` | Tests pass + ≥70% coverage |
 | Lint | `./gradlew lintDevDebug` | Android lint rules |
 | Static Analysis | `./gradlew detekt` | Code quality (Detekt) |
 | Formatting | `./gradlew spotlessCheck` | Code style (Spotless + ktlint) |
@@ -72,8 +72,14 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 # Full build
 ./gradlew assembleDevDebug
 
-# Unit tests
+# Unit tests only
 ./gradlew testDevDebugUnitTest
+
+# Generate coverage report
+./gradlew jacocoDevDebugReport
+
+# Verify 70% coverage threshold
+./gradlew jacocoDevDebugCoverageVerification
 
 # Lint
 ./gradlew lintDevDebug
@@ -87,6 +93,53 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 # Auto-fix formatting
 ./gradlew spotlessApply
 ```
+
+---
+
+## Unit Test Coverage (JaCoCo)
+
+JaCoCo enforces a **minimum 70% instruction coverage** gate. PRs are blocked when coverage drops below the threshold.
+
+### Run locally
+
+```bash
+# Run tests, generate report, and verify threshold in one go
+./gradlew testDevDebugUnitTest jacocoDevDebugReport jacocoDevDebugCoverageVerification
+
+# Individual steps
+./gradlew testDevDebugUnitTest                   # run unit tests
+./gradlew jacocoDevDebugReport                   # generate HTML + XML report
+./gradlew jacocoDevDebugCoverageVerification     # fail if below 70%
+```
+
+### Reports
+
+```
+app/build/reports/jacoco/devDebug/
+├── html/index.html      ← open in browser for line-by-line coverage
+└── jacocoDevDebugReport.xml  ← consumed by CI
+```
+
+### Coverage threshold
+
+| Metric | Threshold |
+|---|---|
+| Instruction coverage | 70% |
+
+To change the threshold, update `minimum` in `jacocoDevDebugCoverageVerification` inside `app/build.gradle.kts`.
+
+### What is excluded
+
+The following are excluded from coverage calculation — they contain no testable business logic:
+
+- Android generated classes (`R`, `BuildConfig`, `Manifest`)
+- Hilt / Dagger generated classes (`*Hilt_*`, `*_Factory`, `*_MembersInjector`, `Dagger*`)
+- Compose generated classes (`*ComposableSingletons*`)
+- Theme, Navigation, and Preview code
+- Android entry points (`MainActivity`, `FlickerGalleryApp`)
+- Interfaces with no implementation (`FlickerRepository`, `ApiService`)
+
+**Do not add real business logic to the exclusion list to inflate coverage numbers.**
 
 ---
 
