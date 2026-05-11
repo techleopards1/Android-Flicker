@@ -15,38 +15,39 @@ jacoco {
 // ── Coverage exclusions ───────────────────────────────────────────────────────
 // Excludes generated, framework, and DI boilerplate from coverage calculation.
 // Do NOT add real business logic classes here.
-val coverageExclusions = listOf(
-    // Android generated
-    "**/R.class",
-    "**/R\$*.class",
-    "**/BuildConfig.*",
-    "**/Manifest*.*",
-    // Hilt / Dagger generated
-    "**/*Hilt_*.*",
-    "**/*_HiltModules*.*",
-    "**/Dagger*.*",
-    "**/*_Factory.*",
-    "**/*_Factory\$*.*",
-    "**/*_MembersInjector.*",
-    "**/*_MembersInjector\$*.*",
-    "**/*_GeneratedInjector*.*",
-    "**/*_ComponentTreeDeps*.*",
-    // Compose generated
-    "**/*ComposableSingletons*.*",
-    // UI-only / theme / navigation / screens (no testable logic)
-    "**/presentation/theme/**",
-    "**/presentation/navigation/**",
-    "**/presentation/screen/**",
-    "**/*Preview*.*",
-    // Hilt DI modules (wiring only, covered by integration tests)
-    "**/di/**",
-    // Android entry points (no unit-testable logic)
-    "**/FlickerGalleryApp.*",
-    "**/MainActivity.*",
-    // Interfaces (no implementation to cover)
-    "**/domain/repository/**",
-    "**/data/remote/api/**",
-)
+val coverageExclusions =
+    listOf(
+        // Android generated
+        "**/R.class",
+        "**/R\$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        // Hilt / Dagger generated
+        "**/*Hilt_*.*",
+        "**/*_HiltModules*.*",
+        "**/Dagger*.*",
+        "**/*_Factory.*",
+        "**/*_Factory\$*.*",
+        "**/*_MembersInjector.*",
+        "**/*_MembersInjector\$*.*",
+        "**/*_GeneratedInjector*.*",
+        "**/*_ComponentTreeDeps*.*",
+        // Compose generated
+        "**/*ComposableSingletons*.*",
+        // UI-only / theme / navigation / screens (no testable logic)
+        "**/presentation/theme/**",
+        "**/presentation/navigation/**",
+        "**/presentation/screen/**",
+        "**/*Preview*.*",
+        // Hilt DI modules (wiring only, covered by integration tests)
+        "**/di/**",
+        // Android entry points (no unit-testable logic)
+        "**/FlickerGalleryApp.*",
+        "**/MainActivity.*",
+        // Interfaces (no implementation to cover)
+        "**/domain/repository/**",
+        "**/data/remote/api/**",
+    )
 
 android {
     namespace = "com.androidflicker.flickergallery"
@@ -146,7 +147,7 @@ tasks.register<JacocoReport>("jacocoDevDebugReport") {
         )
     }
 
-    sourceDirectories.setFrom(files("${projectDir}/src/main/java"))
+    sourceDirectories.setFrom(files("$projectDir/src/main/java"))
     classDirectories.setFrom(
         fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/devDebug") {
             exclude(coverageExclusions)
@@ -178,7 +179,7 @@ tasks.register<JacocoCoverageVerification>("jacocoDevDebugCoverageVerification")
         }
     }
 
-    sourceDirectories.setFrom(files("${projectDir}/src/main/java"))
+    sourceDirectories.setFrom(files("$projectDir/src/main/java"))
     classDirectories.setFrom(
         fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/devDebug") {
             exclude(coverageExclusions)

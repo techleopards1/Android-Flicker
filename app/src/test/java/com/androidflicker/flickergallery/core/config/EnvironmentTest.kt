@@ -5,7 +5,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class EnvironmentTest {
-
     @Test
     fun `DEV has correct id`() {
         assertEquals("dev", Environment.DEV.id)

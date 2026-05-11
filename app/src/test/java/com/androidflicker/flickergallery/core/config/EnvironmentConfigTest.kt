@@ -1,13 +1,11 @@
 package com.androidflicker.flickergallery.core.config
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EnvironmentConfigTest {
-
     @Test
     fun `apiBaseUrl is not empty`() {
         assertTrue(EnvironmentConfig.apiBaseUrl.isNotEmpty())
