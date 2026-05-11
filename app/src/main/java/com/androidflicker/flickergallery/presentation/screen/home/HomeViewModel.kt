@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.androidflicker.flickergallery.core.error.userMessage
 import com.androidflicker.flickergallery.core.result.AppResult
-import com.androidflicker.flickergallery.domain.usecase.GetPhotosUseCase
+import com.androidflicker.flickergallery.domain.usecase.GetRecentPhotosUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 class HomeViewModel
     @Inject
     constructor(
-        private val getPhotosUseCase: GetPhotosUseCase,
+        private val getRecentPhotosUseCase: GetRecentPhotosUseCase,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(HomeUiState())
         val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -35,7 +35,7 @@ class HomeViewModel
         private fun loadPhotos() {
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, error = null) }
-                when (val result = getPhotosUseCase()) {
+                when (val result = getRecentPhotosUseCase()) {
                     is AppResult.Success ->
                         _uiState.update {
                             it.copy(isLoading = false, photos = result.data)

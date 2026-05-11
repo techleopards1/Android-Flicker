@@ -217,6 +217,62 @@ Rules are configured in `config/detekt/detekt.yml`. Key decisions:
 
 ---
 
+## Network Layer
+
+The app targets the **Flickr API** (`https://api.flickr.com/`). All network calls go through the Clean Architecture stack — raw Retrofit exceptions never reach the UI.
+
+### Available endpoints
+
+| Use case | Method | Flickr API method |
+|---|---|---|
+| Recent photos | `GetRecentPhotosUseCase` | `flickr.photos.getRecent` |
+| Search photos | `SearchPhotosUseCase` | `flickr.photos.search` |
+| Popular photos | `GetPopularPhotosUseCase` | `flickr.interestingness.getList` |
+| Photo details | `GetPhotoDetailsUseCase` | `flickr.photos.getInfo` |
+
+### Data flow (API → UI)
+
+```
+ViewModel
+  └── UseCase (domain layer)
+        └── PhotoRepository interface (domain)
+              └── PhotoRepositoryImpl (data layer)
+                    ├── safeApiCall { ... }       ← wraps exceptions into AppError
+                    ├── PhotoRemoteDataSource     ← calls ApiService
+                    └── PhotoMapper.toDomain()    ← DTO → domain model
+```
+
+### Error handling
+
+`safeApiCall` in `core/network/SafeApiCall.kt` converts every exception into a typed `AppError`:
+
+| Exception | AppError type |
+|---|---|
+| `HttpException` 401 | `AppError.Unauthorized` |
+| `HttpException` 404 | `AppError.NotFound` |
+| `HttpException` 5xx | `AppError.Server(code)` |
+| `SocketTimeoutException` | `AppError.Timeout` |
+| `IOException` | `AppError.Network` |
+| `JsonSyntaxException` | `AppError.Serialization` |
+| Any other `Exception` | `AppError.Unknown` |
+
+The UI receives a `String` via `AppError.userMessage()` — it never sees raw exceptions or HTTP codes.
+
+### Adding a new endpoint
+
+1. Add suspend function to `ApiService`
+2. Add method to `PhotoRemoteDataSource`
+3. Add method to `PhotoRepository` interface
+4. Implement in `PhotoRepositoryImpl` using `safeApiCall { ... }`
+5. Create a use case in `domain/usecase/`
+6. Inject use case into ViewModel
+
+### API key
+
+Set `FLICKR_API_KEY` in `NetworkConstants.kt`. For production, load from `BuildConfig` via a secrets file — never commit the real key.
+
+---
+
 ## Dependency Injection (Hilt)
 
 All dependencies are wired through Hilt. Manual `object` creation in UI or ViewModels is not allowed.

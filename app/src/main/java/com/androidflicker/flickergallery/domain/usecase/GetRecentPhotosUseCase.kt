@@ -5,10 +5,10 @@ import com.androidflicker.flickergallery.domain.model.Photo
 import com.androidflicker.flickergallery.domain.repository.PhotoRepository
 import javax.inject.Inject
 
-class GetPhotosUseCase
+class GetRecentPhotosUseCase
     @Inject
     constructor(
         private val repository: PhotoRepository,
     ) {
-        suspend operator fun invoke(): AppResult<List<Photo>> = repository.getRecentPhotos()
+        suspend operator fun invoke(page: Int = 1): AppResult<List<Photo>> = repository.getRecentPhotos(page)
     }

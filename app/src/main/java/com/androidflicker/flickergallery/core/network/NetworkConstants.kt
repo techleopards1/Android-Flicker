@@ -6,4 +6,7 @@ object NetworkConstants {
     // Obtain a key from https://www.flickr.com/services/api/
     // For production, inject via BuildConfig from a secrets file, never commit the real key
     const val FLICKR_API_KEY = ""
+
+    const val DEFAULT_PAGE = 1
+    const val DEFAULT_PER_PAGE = 20
 }
