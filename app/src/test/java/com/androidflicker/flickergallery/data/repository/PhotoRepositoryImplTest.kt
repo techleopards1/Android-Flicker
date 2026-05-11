@@ -5,6 +5,9 @@ import com.androidflicker.flickergallery.core.result.AppResult
 import com.androidflicker.flickergallery.data.remote.api.ApiService
 import com.androidflicker.flickergallery.data.remote.datasource.PhotoRemoteDataSource
 import com.androidflicker.flickergallery.data.remote.dto.FlickrResponse
+import com.androidflicker.flickergallery.data.remote.dto.FlickrSizeDto
+import com.androidflicker.flickergallery.data.remote.dto.FlickrSizesContainerDto
+import com.androidflicker.flickergallery.data.remote.dto.FlickrSizesResponseDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDatesDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDetailsDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDetailsResponseDto
@@ -108,7 +111,30 @@ class PhotoRepositoryImplTest {
         }
 
     @Test
-    fun `getPhotoDetails returns Network error on failure`() =
+    fun `getPhotoDetails enriches domain model with size when getSizes succeeds`() =
+        runBlocking {
+            val sizeDto =
+                FlickrSizeDto(label = "Large 1600", width = 1600, height = 1067, source = "url", media = "photo")
+            val result = repository(FakeApiService(sizes = listOf(sizeDto))).getPhotoDetails("photo-1")
+            assertTrue(result is AppResult.Success)
+            val data = (result as AppResult.Success).data
+            assertEquals(1600, data.width)
+            assertEquals(1067, data.height)
+            assertEquals("Large 1600", data.sizeLabel)
+        }
+
+    @Test
+    fun `getPhotoDetails handles getSizes failure gracefully`() =
+        runBlocking {
+            val result = repository(FakeApiService(sizesException = IOException())).getPhotoDetails("photo-1")
+            assertTrue(result is AppResult.Success)
+            val data = (result as AppResult.Success).data
+            assertEquals(null, data.width)
+            assertEquals(null, data.sizeLabel)
+        }
+
+    @Test
+    fun `getPhotoDetails returns Network error on getInfo failure`() =
         runBlocking {
             val result = repository(FakeApiService(exception = IOException())).getPhotoDetails("photo-1")
             assertTrue(result is AppResult.Error)
@@ -157,9 +183,14 @@ private fun stubFlickrResponse(photos: List<PhotoDto>) =
         stat = "ok",
     )
 
+private fun stubSizesResponseDto(sizes: List<FlickrSizeDto> = emptyList()) =
+    FlickrSizesResponseDto(sizes = FlickrSizesContainerDto(sizes = sizes), stat = "ok")
+
 private class FakeApiService(
     private val photos: List<PhotoDto> = emptyList(),
     private val exception: Exception? = null,
+    private val sizes: List<FlickrSizeDto> = emptyList(),
+    private val sizesException: Exception? = null,
 ) : ApiService {
     override suspend fun searchPhotos(
         method: String,
@@ -207,5 +238,16 @@ private class FakeApiService(
     ): PhotoDetailsResponseDto {
         exception?.let { throw it }
         return stubPhotoDetailsResponseDto(photoId)
+    }
+
+    override suspend fun getPhotoSizes(
+        method: String,
+        apiKey: String,
+        photoId: String,
+        format: String,
+        noJsonCallback: Int,
+    ): FlickrSizesResponseDto {
+        sizesException?.let { throw it }
+        return stubSizesResponseDto(sizes)
     }
 }

@@ -4,6 +4,7 @@ import com.androidflicker.flickergallery.core.dispatcher.IoDispatcher
 import com.androidflicker.flickergallery.core.network.safeApiCall
 import com.androidflicker.flickergallery.core.result.AppResult
 import com.androidflicker.flickergallery.data.remote.datasource.PhotoRemoteDataSource
+import com.androidflicker.flickergallery.data.remote.mapper.FlickrSizeSelector
 import com.androidflicker.flickergallery.data.remote.mapper.toDomain
 import com.androidflicker.flickergallery.domain.model.Photo
 import com.androidflicker.flickergallery.domain.model.PhotoDetails
@@ -38,6 +39,13 @@ class PhotoRepositoryImpl
 
         override suspend fun getPhotoDetails(id: String): AppResult<PhotoDetails> =
             withContext(ioDispatcher) {
-                safeApiCall { remoteDataSource.getPhotoDetails(id).toDomain() }
+                safeApiCall {
+                    val info = remoteDataSource.getPhotoDetails(id)
+                    // getSizes is optional — failure degrades gracefully to no size/dimension info
+                    val sizes =
+                        runCatching { remoteDataSource.getPhotoSizes(id) }.getOrElse { emptyList() }
+                    val selectedSize = FlickrSizeSelector.selectForDetail(sizes)
+                    info.toDomain(selectedSize)
+                }
             }
     }

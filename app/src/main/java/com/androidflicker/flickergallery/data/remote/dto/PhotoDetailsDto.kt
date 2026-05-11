@@ -16,6 +16,15 @@ data class PhotoDetailsDto(
     @SerializedName("owner") val owner: PhotoOwnerDto,
     @SerializedName("dates") val dates: PhotoDatesDto,
     @SerializedName("views") val views: String,
+    @SerializedName("tags") val tags: PhotoTagsDto? = null,
+)
+
+data class PhotoTagsDto(
+    @SerializedName("tag") val tag: List<PhotoTagDto>? = null,
+)
+
+data class PhotoTagDto(
+    @SerializedName("_content") val content: String,
 )
 
 data class PhotoTextDto(
