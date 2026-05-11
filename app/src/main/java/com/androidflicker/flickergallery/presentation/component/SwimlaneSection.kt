@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.androidflicker.flickergallery.presentation.component.state.ShimmerPosterCard
+import com.androidflicker.flickergallery.presentation.component.state.rememberShimmerBrush
 import com.androidflicker.flickergallery.presentation.screen.home.HomeItemUiModel
 import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 
@@ -22,6 +24,7 @@ private val SectionHorizontalPadding = 16.dp
 private val SectionItemSpacing = 12.dp
 private val SectionStatusVerticalPadding = 8.dp
 private const val PREVIEW_ITEM_COUNT = 5
+private const val SHIMMER_PLACEHOLDER_COUNT = 5
 
 @Composable
 fun SwimlaneSection(
@@ -29,6 +32,8 @@ fun SwimlaneSection(
     items: List<HomeItemUiModel>,
     onItemClick: (HomeItemUiModel) -> Unit,
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    isEmpty: Boolean = false,
     errorMessage: String? = null,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -44,6 +49,18 @@ fun SwimlaneSection(
                 ),
         )
         when {
+            isLoading -> {
+                val shimmerBrush = rememberShimmerBrush()
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = SectionHorizontalPadding),
+                    horizontalArrangement = Arrangement.spacedBy(SectionItemSpacing),
+                    userScrollEnabled = false,
+                ) {
+                    items(SHIMMER_PLACEHOLDER_COUNT) {
+                        ShimmerPosterCard(shimmerBrush = shimmerBrush)
+                    }
+                }
+            }
             errorMessage != null ->
                 Text(
                     text = errorMessage,
@@ -55,9 +72,9 @@ fun SwimlaneSection(
                             vertical = SectionStatusVerticalPadding,
                         ),
                 )
-            items.isEmpty() ->
+            isEmpty || items.isEmpty() ->
                 Text(
-                    text = "No items available",
+                    text = "No photos found",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                     modifier =
@@ -90,12 +107,7 @@ private fun SwimlaneSectionPreview() {
             title = "Popular",
             items =
                 List(PREVIEW_ITEM_COUNT) { index ->
-                    HomeItemUiModel(
-                        id = "$index",
-                        title = "Photo ${index + 1}",
-                        imageUrl = "",
-                        subtitle = "owner",
-                    )
+                    HomeItemUiModel(id = "$index", title = "Photo ${index + 1}", imageUrl = "", subtitle = "owner")
                 },
             onItemClick = {},
         )
@@ -104,13 +116,17 @@ private fun SwimlaneSectionPreview() {
 
 @Preview(showBackground = true)
 @Composable
+private fun SwimlaneSectionLoadingPreview() {
+    FlickerGalleryTheme {
+        SwimlaneSection(title = "Nature", items = emptyList(), onItemClick = {}, isLoading = true)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 private fun SwimlaneSectionEmptyPreview() {
     FlickerGalleryTheme {
-        SwimlaneSection(
-            title = "Space",
-            items = emptyList(),
-            onItemClick = {},
-        )
+        SwimlaneSection(title = "Space", items = emptyList(), onItemClick = {}, isEmpty = true)
     }
 }
 
@@ -122,7 +138,7 @@ private fun SwimlaneSectionErrorPreview() {
             title = "Travel",
             items = emptyList(),
             onItemClick = {},
-            errorMessage = "No internet connection",
+            errorMessage = "Unable to load content",
         )
     }
 }

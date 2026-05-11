@@ -4,20 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidflicker.flickergallery.presentation.component.SwimlaneSection
+import com.androidflicker.flickergallery.presentation.component.state.EmptyState
+import com.androidflicker.flickergallery.presentation.component.state.ErrorState
+import com.androidflicker.flickergallery.presentation.component.state.LoadingState
 import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 
 private val HomeTopPadding = 16.dp
@@ -32,7 +30,6 @@ private val HomeBottomPadding = 32.dp
 private val SectionSpacing = 28.dp
 private val HeaderHorizontalPadding = 16.dp
 private val HeaderVerticalPadding = 8.dp
-private val ErrorRetrySpacing = 16.dp
 
 private const val PREVIEW_ITEM_COUNT = 6
 private const val PREVIEW_CATEGORY_COUNT = 10
@@ -58,11 +55,20 @@ fun HomeContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            uiState.isLoading -> HomeLoadingState()
+            uiState.isLoading -> LoadingState()
             uiState.errorMessage != null ->
-                HomeErrorState(
+                ErrorState(
                     message = uiState.errorMessage,
                     onRetry = { onEvent(HomeEvent.RetryLoad) },
+                    modifier = Modifier.fillMaxSize(),
+                )
+            uiState.isEmpty ->
+                EmptyState(
+                    title = "No content available",
+                    description = "There are no photos to show right now.",
+                    actionLabel = "Retry",
+                    onActionClick = { onEvent(HomeEvent.RetryLoad) },
+                    modifier = Modifier.fillMaxSize(),
                 )
             else ->
                 HomeSections(
@@ -93,6 +99,8 @@ private fun HomeSections(
                 title = category.title,
                 items = category.items,
                 onItemClick = { onNavigateToDetails(it.id) },
+                isLoading = category.isLoading,
+                isEmpty = category.isEmpty,
                 errorMessage = category.errorMessage,
             )
         }
@@ -121,38 +129,21 @@ private fun HomeHeader() {
     }
 }
 
-@Composable
-private fun HomeLoadingState() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
-private fun HomeErrorState(
-    message: String,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error,
-        )
-        Spacer(modifier = Modifier.height(ErrorRetrySpacing))
-        Button(onClick = onRetry) {
-            Text("Retry")
-        }
-    }
-}
-
 private fun previewCategories(count: Int = PREVIEW_CATEGORY_COUNT): List<HomeCategoryUiModel> {
-    val names = listOf("Nature", "Animals", "Architecture", "Historical", "Popular", "Trending", "Technology", "Space", "Travel", "Recent")
-    return names.take(count).mapIndexed { index, name ->
+    val names =
+        listOf(
+            "Nature",
+            "Animals",
+            "Architecture",
+            "Historical",
+            "Popular",
+            "Trending",
+            "Technology",
+            "Space",
+            "Travel",
+            "Recent",
+        )
+    return names.take(count).mapIndexed { _, name ->
         HomeCategoryUiModel(
             id = name.lowercase(),
             title = name,
@@ -165,10 +156,7 @@ private fun previewCategories(count: Int = PREVIEW_CATEGORY_COUNT): List<HomeCat
 @Composable
 private fun HomeContentPreview() {
     FlickerGalleryTheme {
-        HomeContent(
-            uiState = HomeUiState(categories = previewCategories()),
-            onEvent = {},
-        )
+        HomeContent(uiState = HomeUiState(categories = previewCategories()), onEvent = {})
     }
 }
 
@@ -184,7 +172,18 @@ private fun HomeLoadingPreview() {
 @Composable
 private fun HomeErrorPreview() {
     FlickerGalleryTheme {
-        HomeContent(uiState = HomeUiState(errorMessage = "No internet connection"), onEvent = {})
+        HomeContent(
+            uiState = HomeUiState(errorMessage = "Unable to load content. Please check your connection."),
+            onEvent = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeEmptyPreview() {
+    FlickerGalleryTheme {
+        HomeContent(uiState = HomeUiState(isEmpty = true), onEvent = {})
     }
 }
 
@@ -197,12 +196,12 @@ private fun HomeEmptyCategoryPreview() {
                 HomeUiState(
                     categories =
                         listOf(
-                            HomeCategoryUiModel(id = "nature", title = "Nature", items = emptyList()),
+                            HomeCategoryUiModel(id = "nature", title = "Nature", items = emptyList(), isEmpty = true),
                             HomeCategoryUiModel(
                                 id = "space",
                                 title = "Space",
                                 items = emptyList(),
-                                errorMessage = "No internet connection",
+                                errorMessage = "Unable to load content",
                             ),
                         ),
                 ),

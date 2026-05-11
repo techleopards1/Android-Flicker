@@ -68,6 +68,7 @@ class HomeViewModelTest {
             assertFalse(state.isLoading)
             assertEquals(HomeCategory.entries.size, state.categories.size)
             assertNull(state.errorMessage)
+            assertFalse(state.isEmpty)
         }
 
     @Test
@@ -84,6 +85,37 @@ class HomeViewModelTest {
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
             assertNotNull(state.errorMessage)
+            assertFalse(state.isEmpty)
+        }
+
+    @Test
+    fun `all categories return empty shows isEmpty true`() =
+        runTest {
+            repository.popularResult = AppResult.Success(emptyList())
+            repository.recentResult = AppResult.Success(emptyList())
+            repository.searchResult = AppResult.Success(emptyList())
+
+            val viewModel = createViewModel()
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val state = viewModel.uiState.value
+            assertFalse(state.isLoading)
+            assertTrue(state.isEmpty)
+            assertNull(state.errorMessage)
+        }
+
+    @Test
+    fun `some categories have items isEmpty is false`() =
+        runTest {
+            val photo = Photo(id = "1", title = "Title", imageUrl = "url", owner = "owner")
+            repository.popularResult = AppResult.Success(listOf(photo))
+            repository.recentResult = AppResult.Success(emptyList())
+            repository.searchResult = AppResult.Success(emptyList())
+
+            val viewModel = createViewModel()
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            assertFalse(viewModel.uiState.value.isEmpty)
         }
 
     @Test
@@ -128,6 +160,7 @@ class HomeViewModelTest {
             val state = viewModel.uiState.value
             assertFalse(state.isLoading)
             assertNull(state.errorMessage)
+            assertFalse(state.isEmpty)
             state.categories.forEach { assertTrue(it.items.isNotEmpty()) }
         }
 
