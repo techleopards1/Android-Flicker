@@ -6,11 +6,13 @@ enum class
 Environment(val id: String) {
     DEV("dev"),
     STAGING("staging"),
-    PRODUCTION("production");
+    PRODUCTION("production"),
+    ;
 
     companion object {
-        fun current(): Environment = entries.firstOrNull {
-            it.id == BuildConfig.APP_ENVIRONMENT
-        } ?: PRODUCTION
+        fun current(): Environment =
+            entries.firstOrNull {
+                it.id == BuildConfig.APP_ENVIRONMENT
+            } ?: PRODUCTION
     }
 }

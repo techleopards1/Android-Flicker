@@ -8,12 +8,10 @@ import androidx.navigation.compose.rememberNavController
 import com.androidflicker.flickergallery.presentation.screen.home.HomeScreen
 
 @Composable
-fun AppNavHost(
-    navController: NavHostController = rememberNavController()
-) {
+fun AppNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.Home.route
+        startDestination = NavRoutes.Home.route,
     ) {
         composable(NavRoutes.Home.route) {
             HomeScreen()

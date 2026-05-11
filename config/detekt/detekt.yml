@@ -1,0 +1,70 @@
+# Detekt configuration for Android Flicker
+# Docs: https://detekt.dev/docs/configuration/
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+# ── Complexity ────────────────────────────────────────────────
+complexity:
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+    ignoreAnnotated: [ 'Composable' ]  # Composable functions naturally have many params
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+    thresholdInInterfaces: 10
+    thresholdInObjects: 15
+    thresholdInEnums: 15
+  CognitiveComplexMethod:
+    threshold: 15
+
+# ── Naming ────────────────────────────────────────────────────
+naming:
+  FunctionNaming:
+    active: true
+    # Allow PascalCase so Jetpack Compose @Composable functions pass without suppression
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    excludes: [ '**/test/**', '**/androidTest/**' ]
+  TopLevelPropertyNaming:
+    active: true
+    # Allow PascalCase top-level vals (e.g. Color palette, Typography)
+    constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+    propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
+    privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
+
+# ── Style ─────────────────────────────────────────────────────
+style:
+  MagicNumber:
+    active: false  # Color values and dimension constants make this too noisy for UI code
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+  WildcardImport:
+    active: false  # Compose APIs are commonly imported with wildcards
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  UnusedPrivateMember:
+    active: true
+    allowedNames: '(_|ignored|expected|serialVersionUID)'
+    ignoreAnnotated: [ 'Preview' ]  # Compose preview functions are used by tooling
+
+# ── Coroutines ────────────────────────────────────────────────
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
