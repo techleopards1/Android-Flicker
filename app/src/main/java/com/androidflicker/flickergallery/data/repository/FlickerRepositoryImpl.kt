@@ -4,6 +4,7 @@ import com.androidflicker.flickergallery.data.remote.api.ApiService
 import com.androidflicker.flickergallery.domain.repository.FlickerRepository
 import javax.inject.Inject
 
+@Suppress("UnusedPrivateProperty")
 class FlickerRepositoryImpl
     @Inject
     constructor(

@@ -134,6 +134,13 @@ jobs:
           path: build/reports/detekt/
           retention-days: 7
 
+      - name: Upload SARIF to GitHub Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: build/reports/detekt/detekt.sarif
+        continue-on-error: true
+
   # ── 5. Formatting Check (Spotless) ──────────────────────────
   formatting-check:
     name: Formatting Check

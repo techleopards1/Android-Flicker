@@ -90,6 +90,80 @@ GitHub Actions runs five checks automatically on every PR and push to `main`/`de
 
 ---
 
+## Static Analysis (Detekt)
+
+Detekt is the Kotlin static analysis tool used in this project. It enforces code quality rules and **blocks PRs on violations**.
+
+### What Detekt checks
+
+| Category | Examples |
+|---|---|
+| Unused code | Unused imports, unused private members, dead code |
+| Complexity | Cyclomatic complexity, cognitive complexity, nested blocks |
+| Long methods | Method length, parameter count |
+| Magic numbers | Unexplained hardcoded numeric values |
+| Unsafe practices | Unsafe casts, swallowed exceptions, empty catch blocks |
+| Coroutines | `GlobalScope` usage, redundant suspend modifiers |
+| Naming | Classes, functions, variables, packages |
+| Style | Line length, wildcard imports, return count |
+
+### Run locally
+
+```bash
+# Run full static analysis
+./gradlew detekt
+
+# Generate baseline for pre-existing violations (use sparingly)
+./gradlew detektBaseline
+```
+
+### Reports
+
+After running `./gradlew detekt`, reports are written to:
+
+```
+build/reports/detekt/
+├── detekt.html    ← human-readable, open in browser
+├── detekt.xml     ← machine-readable, for CI tools
+└── detekt.sarif   ← GitHub Security tab integration
+```
+
+### Fix violations
+
+Detekt error output identifies the file, line, and rule. Example:
+
+```
+ComplexMethod - [onCreate] at MainActivity.kt:16:5
+```
+
+Open the file at the indicated line, simplify the code, and re-run `./gradlew detekt` to confirm the fix.
+
+### Baseline strategy
+
+A baseline (`detekt-baseline.xml`) records pre-existing violations so they are excluded from new analysis.
+
+**Rules:**
+- The baseline should only cover violations that existed before Detekt was introduced
+- New code must pass all rules — do not add new violations to the baseline
+- Shrink the baseline over time by fixing legacy issues
+
+To regenerate the baseline:
+
+```bash
+./gradlew detektBaseline
+```
+
+### Configuration
+
+Rules are configured in `config/detekt/detekt.yml`. Key decisions:
+
+- `@Composable` functions are exempt from `LongMethod` and `LongParameterList`
+- `@Preview` functions are exempt from `UnusedPrivateMember`
+- `MagicNumber` allows `-1`, `0`, `1`, `2`, named arguments, and constants
+- `WildcardImport` allows Compose API namespaces
+
+---
+
 ## Pull Request Workflow
 
 1. Branch off `develop`:

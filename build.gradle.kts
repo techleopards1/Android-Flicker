@@ -13,9 +13,35 @@ detekt {
     source.setFrom(
         "app/src/main/java",
         "app/src/test/java",
+        "app/src/androidTest/java",
     )
     parallel = true
     autoCorrect = false
+    buildUponDefaultConfig = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    reports {
+        html {
+            required.set(true)
+            outputLocation.set(file("build/reports/detekt/detekt.html"))
+        }
+        xml {
+            required.set(true)
+            outputLocation.set(file("build/reports/detekt/detekt.xml"))
+        }
+        sarif {
+            required.set(true)
+            outputLocation.set(file("build/reports/detekt/detekt.sarif"))
+        }
+        txt {
+            required.set(false)
+        }
+    }
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "11"
 }
 
 spotless {

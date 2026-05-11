@@ -11,6 +11,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.androidflicker.flickergallery.presentation.theme.FlickerGalleryTheme
 
+@Suppress("UnusedParameter")
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     HomeContent()
