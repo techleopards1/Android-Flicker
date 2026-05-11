@@ -217,6 +217,69 @@ Rules are configured in `config/detekt/detekt.yml`. Key decisions:
 
 ---
 
+## Dependency Injection (Hilt)
+
+All dependencies are wired through Hilt. Manual `object` creation in UI or ViewModels is not allowed.
+
+### Application setup
+
+| File | Purpose |
+|---|---|
+| `FlickerGalleryApp` | `@HiltAndroidApp` — Hilt entry point |
+| `MainActivity` | `@AndroidEntryPoint` — enables field injection |
+
+### Modules
+
+| Module | Type | Provides |
+|---|---|---|
+| `NetworkModule` | `object` (`@Provides`) | `Gson`, `OkHttpClient`, `Retrofit`, `ApiService` |
+| `RepositoryModule` | `abstract class` (`@Binds`) | `PhotoRepository` → `PhotoRepositoryImpl` |
+| `DispatcherModule` | `object` (`@Provides`) | `@IoDispatcher`, `@DefaultDispatcher`, `@MainDispatcher` |
+| `AppModule` | `object` | Reserved for future application-scope bindings |
+
+### Dispatcher qualifiers
+
+Qualifier annotations live in `core/dispatcher/AppDispatchers.kt`.
+Inject the correct dispatcher by annotating the constructor parameter:
+
+```kotlin
+class MyRepository @Inject constructor(
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+) {
+    suspend fun fetchData() = withContext(ioDispatcher) { ... }
+}
+```
+
+| Qualifier | Dispatcher | Use for |
+|---|---|---|
+| `@IoDispatcher` | `Dispatchers.IO` | Network calls, file I/O, database |
+| `@DefaultDispatcher` | `Dispatchers.Default` | CPU-intensive work |
+| `@MainDispatcher` | `Dispatchers.Main` | UI updates (rarely needed — ViewModels use `viewModelScope`) |
+
+### Injection graph
+
+```
+HomeScreen
+  └── hiltViewModel<HomeViewModel>()
+        └── GetPhotosUseCase  (@Inject constructor)
+              └── PhotoRepository  (interface — bound via RepositoryModule)
+                    └── PhotoRepositoryImpl  (@Inject constructor)
+                          ├── PhotoRemoteDataSource  (@Inject constructor)
+                          │     └── ApiService  (provided by NetworkModule)
+                          │           └── Retrofit  (provided by NetworkModule)
+                          │                 └── OkHttpClient  (provided by NetworkModule)
+                          └── @IoDispatcher CoroutineDispatcher  (provided by DispatcherModule)
+```
+
+### Adding new dependencies
+
+1. For a new repository: add `@Inject constructor` to the impl class, bind it in `RepositoryModule`
+2. For a new network service: add a `@Provides` method in `NetworkModule`
+3. For a new use case: use `@Inject constructor` — no module needed
+4. For a new ViewModel: annotate with `@HiltViewModel @Inject constructor`
+
+---
+
 ## Pull Request Workflow
 
 1. Branch off `develop`:

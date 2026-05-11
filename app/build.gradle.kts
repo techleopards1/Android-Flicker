@@ -41,6 +41,8 @@ val coverageExclusions =
         "**/*Preview*.*",
         // Hilt DI modules (wiring only, covered by integration tests)
         "**/di/**",
+        // Coroutine dispatcher qualifiers (annotation classes, no logic)
+        "**/core/dispatcher/**",
         // Android entry points (no unit-testable logic)
         "**/FlickerGalleryApp.*",
         "**/MainActivity.*",
