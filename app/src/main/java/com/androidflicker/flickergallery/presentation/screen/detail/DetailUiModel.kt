@@ -1,5 +1,7 @@
 package com.androidflicker.flickergallery.presentation.screen.detail
 
+internal const val DEFAULT_ASPECT_RATIO = 16f / 9f
+
 data class DetailUiModel(
     val id: String,
     val title: String,
@@ -10,4 +12,8 @@ data class DetailUiModel(
     val dateUploaded: String,
     val dateTaken: String,
     val photoPageUrl: String,
+    val dimensionsLabel: String? = null,
+    val sizeLabel: String? = null,
+    val imageAspectRatio: Float = DEFAULT_ASPECT_RATIO,
+    val tags: List<String> = emptyList(),
 )

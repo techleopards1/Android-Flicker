@@ -2,6 +2,7 @@ package com.androidflicker.flickergallery.data.remote.datasource
 
 import com.androidflicker.flickergallery.core.network.NetworkConstants
 import com.androidflicker.flickergallery.data.remote.api.ApiService
+import com.androidflicker.flickergallery.data.remote.dto.FlickrSizeDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDetailsDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDto
 import javax.inject.Inject
@@ -61,11 +62,23 @@ class PhotoRemoteDataSource
                     noJsonCallback = NO_JSON_CALLBACK,
                 ).photo
 
+        suspend fun getPhotoSizes(id: String): List<FlickrSizeDto> =
+            apiService
+                .getPhotoSizes(
+                    method = METHOD_SIZES,
+                    apiKey = NetworkConstants.FLICKR_API_KEY,
+                    photoId = id,
+                    format = FORMAT_JSON,
+                    noJsonCallback = NO_JSON_CALLBACK,
+                ).sizes
+                .sizes
+
         private companion object {
             const val METHOD_SEARCH = "flickr.photos.search"
             const val METHOD_RECENT = "flickr.photos.getRecent"
             const val METHOD_POPULAR = "flickr.interestingness.getList"
             const val METHOD_DETAILS = "flickr.photos.getInfo"
+            const val METHOD_SIZES = "flickr.photos.getSizes"
             const val FORMAT_JSON = "json"
             const val NO_JSON_CALLBACK = 1
         }

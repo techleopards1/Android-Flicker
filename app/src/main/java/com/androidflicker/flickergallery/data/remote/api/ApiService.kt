@@ -1,6 +1,7 @@
 package com.androidflicker.flickergallery.data.remote.api
 
 import com.androidflicker.flickergallery.data.remote.dto.FlickrResponse
+import com.androidflicker.flickergallery.data.remote.dto.FlickrSizesResponseDto
 import com.androidflicker.flickergallery.data.remote.dto.PhotoDetailsResponseDto
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -45,4 +46,13 @@ interface ApiService {
         @Query("format") format: String,
         @Query("nojsoncallback") noJsonCallback: Int,
     ): PhotoDetailsResponseDto
+
+    @GET("services/rest/")
+    suspend fun getPhotoSizes(
+        @Query("method") method: String,
+        @Query("api_key") apiKey: String,
+        @Query("photo_id") photoId: String,
+        @Query("format") format: String,
+        @Query("nojsoncallback") noJsonCallback: Int,
+    ): FlickrSizesResponseDto
 }
